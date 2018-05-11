@@ -1,5 +1,5 @@
 {
-  "name": "speech-web",
+  "name": "dora-admin-page",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -100,19 +100,19 @@
   },
   "proxy": {
     "/socket.io": {
-      "target": "http://quiz-robo.local:3090"
+      "target": "http://localhost:3090"
     },
     "/scenario": {
-      "target": "http://quiz-robo.local:3090"
+      "target": "http://localhost:3090"
     },
     "/command": {
-      "target": "http://quiz-robo.local:3090"
+      "target": "http://localhost:3090"
     },
     "/result": {
-      "target": "http://quiz-robo.local:3090"
+      "target": "http://localhost:3090"
     },
     "/text-to-speech": {
-      "target": "http://quiz-robo.local:3090"
+      "target": "http://localhost:3090"
     }
   }
 }
