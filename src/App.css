@@ -1,0 +1,197 @@
+html {
+  font-weight: 100;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  height: 100%;
+}
+
+p {
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  height: 100%;
+}
+
+.App {
+  text-align: center;
+  flex-direction: column;
+  height: 100%;
+}
+
+.Result {
+  margin: 30px;
+}
+
+.Result p {
+  margin-bottom: 10px;
+}
+
+.ResultTitle {
+  margin-top: 30px;
+  margin-bottom: 10px;
+  background: #AAFFFF;
+}
+
+.ResultItem {
+  border-bottom: 1px solid lightgray;
+  margin-bottom: 3px;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.App-Row {
+  display: flex;
+  flex-direction: row;
+}
+
+.App-Column {
+  display: flex;
+  flex-direction: column;
+}
+
+.Button-Container {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  flex: 1;
+  z-index: 1;
+}
+
+.Button-Key {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  text-decoration: none;
+  border: 5px solid white;
+  border-radius: 22px;
+}
+
+.Button-Key-Pushed { 
+  background-color: yellow;
+}
+
+.Button-Key-Correct { 
+  border: 5px solid red;
+  border-radius: 22px;
+  z-index: 100;
+}
+
+.Button-Key-Fade {
+  animation: fade-in-keyframes 1s;
+}
+@keyframes fade-in-keyframes {
+  from {opacity: 0}
+  to {opacity: 1}
+}
+
+.MenuButton-Container {
+  padding: 0;
+  border: 0;
+  height: 44px;
+}
+
+.MenuButton-Key {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  border: 1px solid lightgray;
+}
+
+.Item-Container {
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid lightgray;
+}
+
+.Category {
+  width: 90%;
+  margin: auto;
+}
+
+.Category-Name {
+  width: 90%;
+  margin: auto;
+  word-wrap: normal;
+}
+
+.Name-Input {
+  width: 244px;
+  height: 44px;
+  font-size: 1em;
+}
+
+.Result-Item {
+  color: #2196f3;
+  font-weight: bold;
+}
+
+.Ranking-Title {
+  font-weight: bold;
+  margin-bottom: 30px;
+  color: #ff5722;
+}
+
+.Ranking-Item {
+  font-weight: bold;
+  color: white;
+  background: blue;
+  border-radius: 22px;
+  border: 5px solid #FFDD00;
+  margin-bottom: 3px;
+}
+
+.Ranking-Container {
+  margin: 10px;
+}
+
+.Ranking-Result-Item {
+  font-weight: bold;
+  color: #ff0099;
+}
+
+table, th, td {
+  border-collapse: collapse;
+  border: 1px solid darkgray;
+  padding: 4px;
+}
+
+th {
+  background-color: #bee7ffff;
+}
+
+td.Data {
+  text-align: center;
+}
