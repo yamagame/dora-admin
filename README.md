@@ -1,7 +1,7 @@
 # Dora Admin Page
 
-[ドラエンジン](https://github.com/yamagame/dora-engine)用管理者ページのソースコードです。
-ビルドしたファイルをドラエンジンのpublicフォルダに配置します。[create-react-app](https://github.com/facebook/create-react-app)を使っています。
+[DoraEngine](https://github.com/yamagame/dora-engine)用管理者ページのソースコードです。
+ビルドしたファイルをDoraEngineのpublicフォルダに配置します。[create-react-app](https://github.com/facebook/create-react-app)を使っています。
 
 ## 機能
 
@@ -32,4 +32,4 @@ $ npm run build
 
 ## License
 
-  MIT
+[MIT](LICENSE)
