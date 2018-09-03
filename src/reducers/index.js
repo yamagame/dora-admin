@@ -1,8 +1,14 @@
 import { combineReducers } from 'redux'
 import Play from './speech'
 import 'whatwg-fetch'
+import io from 'socket.io-client'
 
 //const Dora = require('dora');
+
+export const fontSize = (payload) => {
+  var size = (payload.width < payload.height) ? payload.width : payload.height;
+  return parseInt(size*0.6/10, 10);
+}
 
 const AsyncStorage = {
   getItem: function(key, defaultValue) {
@@ -24,7 +30,22 @@ export const types = {
 const algorithmPlay = new Play();
 //const dora = new Dora();
 
-const setValues = (state = {}, action) => {
+const initialState = {
+  name: '',
+  adminFilename: '出席表示',
+  clientId: '',
+  members: [],
+  adminPage: '出席',
+  adminQuizId: '',
+  adminStartTime: '',
+  adminPlayerName: '',
+  fontSize: fontSize({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }),
+}
+
+const setValues = (state = initialState, action) => {
   if (action.type === types.PARAMS) {
     return {
       ...state,
@@ -44,93 +65,112 @@ export const reducers = combineReducers({
   app: setValues,
 })
 
-const initialState = {
-  name: '',
-  adminFilename: '出席表示',
-  clientId: '',
-  members: [],
-  adminPage: '出席',
-  adminQuizId: '',
-  adminStartTime: '',
-  adminPlayerName: '',
-}
-
-export const initialData = (params, socketIO) => async (dispatch, getState) => {
+export const initialData = (params, callback) => async (dispatch, getState) => {
   const payload = {
     ...initialState,
     ...params,
     width: window.innerWidth,
     height: window.innerHeight,
   }
+  let signature = null;
+  let user_id = null;
   payload.fontSize = fontSize(payload);
-  socket = socketIO;
+  // socket = socketIO;
   await Promise.all(Object.keys(initialState).map(async (key) => {
     payload[key] = await AsyncStorage.getItem(key, payload[key]);
   }));
-  payload.adminFilename = '出席表示';
-  payload.adminPage = '出席';
-  if (payload.name) {
+  try {
     {
-      let response = await fetch('/scenario', {
+      let response = await fetch('/access-token', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'list',
-          name: payload.name,
-        })
-      })
-      let data = await response.json();
-      if (data && data.items) {
-        payload.items = data.items;
+      });
+      if (response.ok) {
+        let data = await response.json();
+        signature = data.signature;
+        user_id = data.user_id;
+        dispatch({
+          type: types.PARAMS,
+          payload: {
+            user_id,
+            signature,
+          },
+        });
       }
     }
-    {
-      let response = await fetch('/scenario', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'load',
-          name: 'admin-user',
-          filename: '出席CSV',
+    payload.adminFilename = '出席表示';
+    payload.adminPage = '出席';
+    if (payload.name) {
+      {
+        let response = await fetch('/scenario', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'list',
+            name: payload.name,
+          })
         })
-      })
-      let data = await response.json();
-      if (data && data.text) {
-        payload.text = data.text;
+        let data = await response.json();
+        if (data && data.items) {
+          payload.items = data.items;
+        }
+      }
+      {
+        let response = await fetch('/scenario', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'load',
+            name: 'admin-user',
+            filename: '出席CSV',
+          })
+        })
+        let data = await response.json();
+        if (data && data.text) {
+          payload.text = data.text;
+        }
+      }
+      {
+        let response = await fetch('/result', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            type: 'answers',
+            quizId: null,
+            startTime: null,
+          })
+        })
+        let data = await response.json();
+        payload.result = data;
       }
     }
+    dispatch({
+      type: types.PARAMS,
+      payload,
+    });
     {
-      let response = await fetch('/result', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          type: 'answers',
-          quizId: null,
-          startTime: null,
-        })
-      })
-      let data = await response.json();
-      payload.result = data;
+      const payload_ = {
+        name: payload.name,
+        clientId: payload.clientId,
+        time: new Date(),
+        user_id,
+        signature,
+      }
+      callback(payload_);
     }
+  } catch(err) {
+    console.log(err);
   }
-  dispatch({
-    type: types.PARAMS,
-    payload,
-  });
-  if (socket) {
-    const payload_ = {
-      name: payload.name,
-      clientId: payload.clientId,
-      time: new Date(),
-    }
-    socket.emit('quiz', payload_);
-  }
+}
+
+export const createSocket = () => {
+  socket = io();
+  return socket;
 }
 
 export const playSpeech = (message, callback) => async (dispatch, getState) => {
@@ -230,17 +270,21 @@ export const load = (option, callback) => async (dispatch, getState) => {
       filename: (option.filename) ? option.filename : adminFilename,
     })
   })
-  let data = await response.json();
-  if (data && typeof data.text !== 'undefined') {
-    payload.text = data.text;
-  } else {
-    payload.text = '';
+  if (response.ok) {
+    let data = await response.json();
+    if (data && typeof data.text !== 'undefined') {
+      payload.text = data.text;
+    } else {
+      payload.text = '';
+    }
+    dispatch({
+      type: types.PARAMS,
+      payload,
+    });
+    if (callback) callback(null, payload.text);
+    return;
   }
-  dispatch({
-    type: types.PARAMS,
-    payload,
-  });
-  if (callback) callback(null);
+  if (callback) callback(null, '');
 }
 
 export const list = (callback) => async (dispatch, getState) => {
@@ -257,20 +301,17 @@ export const list = (callback) => async (dispatch, getState) => {
       name,
     })
   })
-  let data = await response.json();
-  if (data && data.items) {
-    payload.items = data.items;
+  if (response.ok) {
+    let data = await response.json();
+    if (data && data.items) {
+      payload.items = data.items;
+    }
+    dispatch({
+      type: types.PARAMS,
+      payload,
+    });
   }
-  dispatch({
-    type: types.PARAMS,
-    payload,
-  });
   if (callback) callback(null);
-}
-
-export const fontSize = (payload) => {
-  var size = (payload.width < payload.height) ? payload.width : payload.height;
-  return parseInt(size*0.6/10, 10);
 }
 
 export const changeLayout = (payload) => async (dispatch, getState) => {
@@ -295,11 +336,13 @@ export const setParams = (payload, callback) => async (dispatch, getState) => {
 }
 
 export const sendEntry = (callback) => async (dispatch, getState) => {
-  const { app: { name, clientId, } } = getState();
+  const { app: { name, clientId, user_id, signature, } } = getState();
   const payload = {
     name,
     clientId,
     time: new Date(),
+    user_id,
+    signature,
   }
   socket.emit('quiz', payload);
   dispatch({
@@ -367,15 +410,17 @@ export const loadResult = (quizId, startTime, playerName, callback) => async (di
       startTime: startTime,
     })
   })
-  let result = await response.json();
-  dispatch({
-    type: types.PARAMS,
-    payload: {
-      result,
-      adminQuizId: quizId,
-      adminStartTime: startTime,
-      adminPlayerName: playerName,
-    }
-  });
+  if (response.ok) {
+    let result = await response.json();
+    dispatch({
+      type: types.PARAMS,
+      payload: {
+        result,
+        adminQuizId: quizId,
+        adminStartTime: startTime,
+        adminPlayerName: playerName,
+      }
+    });
+  }
   if (callback) callback();
 }

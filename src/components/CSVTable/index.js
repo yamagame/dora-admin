@@ -6,6 +6,9 @@ class CSVTable extends Component {
   }
 
   render() {
+    if (!this.props.value) {
+      return <div></div>
+    }
     const head = this.props.value.split('\n')[0];
     const body = this.props.value.split('\n').slice(1);
     return (

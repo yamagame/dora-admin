@@ -37,7 +37,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: "",
+      value: props.text,
       row: 0,
       width: window.innerWidth,
       height: window.innerHeight,
@@ -268,7 +268,7 @@ class App extends Component {
                 <label> あなたの名前： </label>
                 <input ref={ d => this.entryName = d } type="text" className="Name-Input"/>
               </div>
-              <select name="members" style={{
+              {/* <select name="members" style={{
                 appearance: 'none',
                 marginLeft: 100,
                 marginBottom: 30,
@@ -286,7 +286,7 @@ class App extends Component {
                     return <option key={i} value={p}> {p} </option>
                   }) : null
                 }
-              </select>
+              </select> */}
               <div style={{
                 flex: 1,
                 width: '30%',
@@ -299,13 +299,12 @@ class App extends Component {
                     }
                   </Button>
                 </div>
+                <div>
+                  <form method="GET" action="/logout/admin">
+                    <input className="logoutButton" type="submit" value="logout" />
+                  </form>
+                </div>
               </div>
-              <p style={{
-                flex: 1,
-                fontSize: this.props.fontSize*0.4,
-              }}>
-                名前を選択してスタートボタンをクリックしてね！
-              </p>
             </div>
           </div>
         </Column>
