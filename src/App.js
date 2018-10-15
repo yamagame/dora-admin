@@ -191,6 +191,10 @@ class App extends Component {
             this.props.setParams({ adminFilename: value, adminPage: '出席', }, () => {
               this.props.load({ filename: '出席CSV' });
             });
+          } else
+          if (value === '各種設定') {
+            this.props.setParams({ adminFilename: value, adminPage: '設定', }, () => {
+            });
           } else {
             this.props.setParams({ adminFilename: value, adminPage: '', }, () => {
               this.props.load({ filename: value });
@@ -246,6 +250,15 @@ class App extends Component {
               }}
             />
           </div> : null
+        }
+        {
+          (this.props.adminPage === '設定') ? (<div
+            style={{
+              margin: 10,
+            }}
+          >
+            <a href="/wave-analyzer">マイク感度設定</a>
+          </div>) : null
         }
       </div>
     )
@@ -331,7 +344,7 @@ export default connect(
     width: state.app.width,
     height: state.app.height,
     members: state.app.members,
-    items: ['出席表示', '集計表示', '出席CSV', '日付リスト', '生徒リスト'],
+    items: ['出席表示', '集計表示', '出席CSV', '日付リスト', '生徒リスト', '各種設定'],
     adminFilename: state.app.adminFilename,
     adminPage: state.app.adminPage,
   } ),
