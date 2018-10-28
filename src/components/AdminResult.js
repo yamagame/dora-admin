@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { fontSize } from '../reducers'
+import Radar from './Radar';
 
 function dateStr(datestring) {
   const d = new Date(datestring);
@@ -24,7 +25,77 @@ class AdminResult extends Component {
     const { result, quizId, startTime, playerName } = this.props;
     if (quizId) {
       if (startTime) {
-        const answers = Object.keys(result.answers).sort();
+        const categories = {};
+        const radar = {
+          legend: [],
+          data: [],
+        };
+        {
+          const { quiz } = result.question;
+          {
+            Object.keys(quiz).forEach( key => {
+              const cat = quiz[key].category;
+              if (cat) {
+                if (categories[cat]) {
+                  categories[cat].total ++;
+                } else {
+                  categories[cat] = { total: 1, point: 0, };
+                }
+              }
+            })
+          }
+          if (Object.keys(categories).length > 0) {
+            {
+              Object.keys(result.answers).forEach( question => {
+                Object.keys(result.answers[question]).forEach( clientId => {
+                  const q = result.answers[question][clientId].answer;
+                  if (quiz[question]) {
+                    const cat = quiz[question].category;
+                    if (quiz[question].answers.some( p => {
+                      return (q === p);
+                    })) {
+                      categories[cat].point ++;
+                    }
+                  }
+                })
+              })
+            }
+            Object.keys(categories).sort().forEach( v => {
+              radar.legend.push(v);
+              radar.data.push(categories[v].point/categories[v].total);
+            })
+          } else {
+            Object.keys(quiz).forEach( question => {
+              const cat = question;
+              if (cat) {
+                if (categories[cat]) {
+                  categories[cat].total ++;
+                } else {
+                  categories[cat] = { total: 1, point: 0, };
+                }
+              }
+            })
+            {
+              Object.keys(result.answers).forEach( question => {
+                Object.keys(result.answers[question]).forEach( clientId => {
+                  const q = result.answers[question][clientId].answer;
+                  if (quiz[question]) {
+                    const cat = question;
+                    if (quiz[question].answers.some( p => {
+                      return (q === p);
+                    })) {
+                      categories[cat].point ++;
+                    }
+                  }
+                })
+              })
+            }
+            Object.keys(categories).sort().forEach( v => {
+              radar.legend.push(v);
+              radar.data.push(categories[v].point/categories[v].total);
+            })
+          }
+        }
         function resultItemStyle(str, q) {
           function checkItem() {
             if (result.question) {
@@ -47,6 +118,7 @@ class AdminResult extends Component {
             return {};
           }
         }
+        const answers = Object.keys(result.answers).sort();
         return (
           //クイズ回答一覧
           <div className="Result">
@@ -55,6 +127,16 @@ class AdminResult extends Component {
               (playerName) ? <a href={`?quizId=${encodeURIComponent(quizId)}&startTime=${startTime}`} onClick={this.onChangeResultHandler(quizId, startTime)}> BACK </a> :  <a href={`?quizId=${encodeURIComponent(quizId)}`} onClick={this.onChangeResultHandler(quizId)}> BACK </a>
             }
             </p>
+            {
+              <Radar
+                ref={ d => this.radarView = d }
+                style={{
+                  height: 400,
+                }}
+                legend={radar.legend}
+                data={radar.data}
+              />
+            }
             {
               (answers) ? answers.map( (q, i) => {
                 return (
