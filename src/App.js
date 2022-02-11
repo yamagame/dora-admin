@@ -1,8 +1,8 @@
-import React, { Component }  from 'react';
-import { connect } from 'react-redux'
-import Button from './components/Button';
-import Column from './components/Column';
-import AceEditor from 'react-ace';
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import Button from "./components/Button";
+import Column from "./components/Column";
+import AceEditor from "react-ace";
 import {
   playSpeech,
   stopSpeech,
@@ -14,23 +14,32 @@ import {
   changeLayout,
   setParams,
   loadResult,
-} from './reducers'
-import './App.css';
-import CSVTable from './components/CSVTable';
+} from "./reducers";
+import "./App.css";
+import CSVTable from "./components/CSVTable";
 
-import 'brace/mode/plain_text';
-import './libs/example_mode';
-import 'brace/theme/monokai';
-import AdminResult from './components/AdminResult';
+import "brace/mode/plain_text";
+import "./libs/example_mode";
+import "brace/theme/monokai";
+import AdminResult from "./components/AdminResult";
 
 function buttonValue(v, height, host) {
-  if (typeof v !== 'object') {
-    return <p> { v } </p>;
+  if (typeof v !== "object") {
+    return <p> {v} </p>;
   }
   if (v.image) {
-    return <div style={{ marginTop: 10, }} ><img alt="icon" style={{ margin: 'auto', padding: 0, pointerEvents: 'none', }} height={height-4} src={(host) ? host+v.image : v.image} /></div>
+    return (
+      <div style={{ marginTop: 10 }}>
+        <img
+          alt="icon"
+          style={{ margin: "auto", padding: 0, pointerEvents: "none" }}
+          height={height - 4}
+          src={host ? host + v.image : v.image}
+        />
+      </div>
+    );
   }
-  return <p> { v.value } </p>;
+  return <p> {v.value} </p>;
 }
 
 class App extends Component {
@@ -41,11 +50,11 @@ class App extends Component {
       row: 0,
       width: window.innerWidth,
       height: window.innerHeight,
-      page: '',
+      page: "",
       quizId: null,
       startTime: null,
       playerName: null,
-    }
+    };
     this.saveTimeout = null;
   }
 
@@ -54,14 +63,14 @@ class App extends Component {
       width: window.innerWidth,
       height: window.innerHeight,
     });
-  }
+  };
 
   componentDidMount() {
-    window.addEventListener('resize', this.onResize, false);
+    window.addEventListener("resize", this.onResize, false);
   }
-  
+
   componentWillUnmount() {
-    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener("resize", this.onResize);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -72,7 +81,7 @@ class App extends Component {
     }
   }
 
-  onChange = (newValue) => {
+  onChange = newValue => {
     this.setState({
       value: newValue,
     });
@@ -80,11 +89,11 @@ class App extends Component {
       clearTimeout(this.saveTimeout);
     }
     this.saveTimeout = setTimeout(() => {
-      this.props.save(this.state.value, (err) => {
+      this.props.save(this.state.value, err => {
         this.saveTimeout = null;
       });
     }, 1000);
-  }
+  };
 
   onCursorChange = (selection, event) => {
     const srow = selection.getRange().start.row;
@@ -94,149 +103,208 @@ class App extends Component {
       endRow: erow,
       row: selection.getSelectionLead().row,
     });
-  }
+  };
 
-  debug = () => {
-  }
+  debug = () => {};
 
-  play = (range) => {
+  play = range => {
     this.props.setParams({ playing: true });
     this.props.playScenario(this.props.adminFilename, range);
-  }
+  };
 
   playAll = () => {
     this.play({});
-  }
+  };
 
   playRange = () => {
     if (this.state.startRow == this.state.endRow) {
       this.play({ start: this.state.startRow });
     } else {
-      this.play({ start: this.state.startRow, end: this.state.startRow+Math.max(1, this.state.endRow-this.state.startRow) });
+      this.play({
+        start: this.state.startRow,
+        end:
+          this.state.startRow +
+          Math.max(1, this.state.endRow - this.state.startRow),
+      });
     }
-  }
+  };
 
   stop = () => {
     this.props.stopScenario();
     this.props.setParams({ playing: false });
-  }
+  };
 
-  _play = (scenario) => {
-    const s = scenario.map( (v,i) => {
-      if (v === '' && i > 0) {
-        return ':1s';
-      }
-      return v;
-    }).join('\n').replace(/(\/\*[^*]*\*\/)|(\/\/.*)/g, '//').trim()
+  _play = scenario => {
+    const s = scenario
+      .map((v, i) => {
+        if (v === "" && i > 0) {
+          return ":1s";
+        }
+        return v;
+      })
+      .join("\n")
+      .replace(/(\/\*[^*]*\*\/)|(\/\/.*)/g, "//")
+      .trim();
     this.props.playSpeech(s);
-  }
+  };
 
   _playAll = () => {
-    this.play(this.state.value.split('\n'));
-  }
+    this.play(this.state.value.split("\n"));
+  };
 
   _playRange = () => {
     if (this.state.startRow == this.state.endRow) {
-      this.play(this.state.value.trim().split('\n').slice(this.state.startRow));
+      this.play(this.state.value.trim().split("\n").slice(this.state.startRow));
     } else {
-      this.play(this.state.value.trim().split('\n').slice(this.state.startRow, this.state.startRow+Math.max(1, this.state.endRow-this.state.startRow)));
+      this.play(
+        this.state.value
+          .trim()
+          .split("\n")
+          .slice(
+            this.state.startRow,
+            this.state.startRow +
+              Math.max(1, this.state.endRow - this.state.startRow)
+          )
+      );
     }
-  }
+  };
 
   _stop = () => {
     this.props.stopSpeech();
-  }
+  };
 
   rename = () => {
-    this.setState({
-      changeName: true,
-    }, () => {
-      this.entryName.value = this.props.name;
-    });
-  }
+    this.setState(
+      {
+        changeName: true,
+      },
+      () => {
+        this.entryName.value = this.props.name;
+      }
+    );
+  };
 
   startQuiz = () => {
-    if (this.entryName.value.trim() !== '') {
-      this.props.setParams({ name: this.entryName.value.trim(), adminFilename: '出席表示' }, () => {
-        this.setState({
-          changeName: false,
-        }, () => {
-          this.props.list(() => {
-            this.props.load({ filename: '出席CSV' });
-          });
-        });
-      });
+    if (this.entryName.value.trim() !== "") {
+      this.props.setParams(
+        { name: this.entryName.value.trim(), adminFilename: "出席表示" },
+        () => {
+          this.setState(
+            {
+              changeName: false,
+            },
+            () => {
+              this.props.list(() => {
+                this.props.load({ filename: "出席CSV" });
+              });
+            }
+          );
+        }
+      );
     }
-  }
+  };
 
   render() {
-    if (typeof this.props.name === 'undefined' || this.props.name === '' || this.props.name.length <= 1 || this.state.changeName) {
+    if (
+      typeof this.props.name === "undefined" ||
+      this.props.name === "" ||
+      this.props.name.length <= 1 ||
+      this.state.changeName
+    ) {
       return this.renderTitle({});
     }
-    return this.renderEditor({})
+    return this.renderEditor({});
   }
 
   renderEditor() {
     return (
       <div>
-        <select value={this.props.adminFilename} onChange={(event) => {
-          const value = event.target.value;
-          if (value === '集計表示') {
-            this.props.setParams({ adminFilename: value, adminPage: '集計', }, () => {
-              this.props.loadResult(this.props.adminQuizId, this.props.adminStartTime, this.props.adminPlayerName, () => {
-              });
-            });
-          } else
-          if (value === '出席表示') {
-            this.props.setParams({ adminFilename: value, adminPage: '出席', }, () => {
-              this.props.load({ filename: '出席CSV' });
-            });
-          } else
-          if (value === '各種設定') {
-            this.props.setParams({ adminFilename: value, adminPage: '設定', }, () => {
-            });
-          } else {
-            this.props.setParams({ adminFilename: value, adminPage: '', }, () => {
-              this.props.load({ filename: value });
-            });
-          }
-        }}>
-          {
-            (this.props.items) ? this.props.items.map( (p, i) => {
-              return <option key={i} value={p}> {p} </option>
-            }) : null
-          }
+        <select
+          value={this.props.adminFilename}
+          onChange={event => {
+            const value = event.target.value;
+            if (value === "集計表示") {
+              this.props.setParams(
+                { adminFilename: value, adminPage: "集計" },
+                () => {
+                  this.props.loadResult(
+                    this.props.adminQuizId,
+                    this.props.adminStartTime,
+                    this.props.adminPlayerName,
+                    () => {}
+                  );
+                }
+              );
+            } else if (value === "出席表示") {
+              this.props.setParams(
+                { adminFilename: value, adminPage: "出席" },
+                () => {
+                  this.props.load({ filename: "出席CSV" });
+                }
+              );
+            } else if (value === "マイク感度") {
+              window.location = "/wave-analyzer";
+            } else if (value === "スケジューラ") {
+              window.location = "/scheduler";
+            } else if (value === "各種設定") {
+              this.props.setParams(
+                { adminFilename: value, adminPage: "設定" },
+                () => {}
+              );
+            } else {
+              this.props.setParams(
+                { adminFilename: value, adminPage: "" },
+                () => {
+                  this.props.load({ filename: value });
+                }
+              );
+            }
+          }}
+        >
+          {this.props.items
+            ? this.props.items.map((p, i) => {
+                return (
+                  <option key={i} value={p}>
+                    {" "}
+                    {p}{" "}
+                  </option>
+                );
+              })
+            : null}
         </select>
-        <div style={{ display: 'inline', float: 'right' }}>
-          <p style={{ display: 'inline', fontSize: 12}}> { this.props.name } </p>
-          <input style={{ display: 'inline',}} type="button" value="名前の変更" onClick={this.rename}/>
+        <div style={{ display: "inline", float: "right" }}>
+          <p style={{ display: "inline", fontSize: 12 }}> {this.props.name} </p>
+          <input
+            style={{ display: "inline" }}
+            type="button"
+            value="名前の変更"
+            onClick={this.rename}
+          />
         </div>
-        {
-          (this.props.adminPage === '') ? <AceEditor
-            ref={ r => this.editor = r }
+        {this.props.adminPage === "" ? (
+          <AceEditor
+            ref={r => (this.editor = r)}
             mode="example"
             theme="monokai"
             value={this.state.value}
             width="100"
-            height={(this.props.height-40)+"px"}
+            height={this.props.height - 40 + "px"}
             onChange={this.onChange}
             showPrintMargin={false}
             fontSize={18}
             onCursorChange={this.onCursorChange}
             name="UNIQUE_ID_OF_DIV"
-            editorProps={{$blockScrolling: Infinity}}
-          /> : null
-        }
-        {
-          (this.props.adminPage === '出席') ? <CSVTable
-            value={this.state.value}
-          /> : null
-        }
-        {
-          (this.props.adminPage === '集計') ? <div
+            editorProps={{ $blockScrolling: Infinity }}
+          />
+        ) : null}
+        {this.props.adminPage === "出席" ? (
+          <CSVTable value={this.state.value} />
+        ) : null}
+        {this.props.adminPage === "集計" ? (
+          <div
             style={{
               width: "100%",
-              height: (this.props.height-40)+"px",
+              height: this.props.height - 40 + "px",
             }}
           >
             <AdminResult
@@ -245,41 +313,61 @@ class App extends Component {
               startTime={this.props.adminStartTime}
               playerName={this.props.adminPlayerName}
               onChangeResult={(quizId, startTime, playerName) => {
-                this.props.loadResult(quizId, startTime, playerName, () => {
-                });
+                this.props.loadResult(quizId, startTime, playerName, () => {});
               }}
             />
-          </div> : null
-        }
-        {
-          (this.props.adminPage === '設定') ? (<div
+          </div>
+        ) : null}
+        {this.props.adminPage === "設定" ? (
+          <div
             style={{
               margin: 10,
             }}
           >
-            <a href="/wave-analyzer">マイク感度設定</a>
-          </div>) : null
-        }
+            <p>
+              <a href="/wave-analyzer">マイク感度設定</a>
+            </p>
+            <p>
+              <a href="/scheduler">スケジューラ</a>
+            </p>
+          </div>
+        ) : null}
       </div>
-    )
+    );
   }
 
   renderTitle() {
     return (
       <div className="App">
-        <Column style={{ height: '100%', }}>
-          <div style={{ margin: 'auto', width: '100%', }}>
-            <div style={{ marginBottom: 100, }}>
-              <p style={{
-                overflow: 'hidden',
-                fontSize: this.props.fontSize,
-                textAlign: 'middle',
-                margin: 8,
-                flex: 1,
-              }}> 管理者ページ </p>
-              <div style={{ fontSize: this.props.fontSize*0.5, flex: 1, margin: 30, marginBottom: 0 }}>
+        <Column style={{ height: "100%" }}>
+          <div style={{ margin: "auto", width: "100%" }}>
+            <div style={{ marginBottom: 100 }}>
+              <p
+                style={{
+                  overflow: "hidden",
+                  fontSize: this.props.fontSize,
+                  textAlign: "middle",
+                  margin: 8,
+                  flex: 1,
+                }}
+              >
+                {" "}
+                管理者ページ{" "}
+              </p>
+              <div
+                style={{
+                  fontSize: this.props.fontSize * 0.5,
+                  flex: 1,
+                  margin: 30,
+                  marginBottom: 0,
+                }}
+              >
                 <label> あなたの名前： </label>
-                <input ref={ d => this.entryName = d } type="text" className="Name-Input"/>
+                <input
+                  ref={d => (this.entryName = d)}
+                  type="text"
+                  className="Name-Input"
+                />
               </div>
               {/* <select name="members" style={{
                 appearance: 'none',
@@ -300,21 +388,25 @@ class App extends Component {
                   }) : null
                 }
               </select> */}
-              <div style={{
-                flex: 1,
-                width: '30%',
-                margin: 'auto',
-              }}>
+              <div
+                style={{
+                  flex: 1,
+                  width: "30%",
+                  margin: "auto",
+                }}
+              >
                 <div>
                   <Button onClick={this.startQuiz}>
-                    {
-                      buttonValue("スタート", this.props.fontSize*4)
-                    }
+                    {buttonValue("スタート", this.props.fontSize * 4)}
                   </Button>
                 </div>
                 <div>
                   <form method="GET" action="/logout/admin">
-                    <input className="logoutButton" type="submit" value="logout" />
+                    <input
+                      className="logoutButton"
+                      type="submit"
+                      value="logout"
+                    />
                   </form>
                 </div>
               </div>
@@ -322,7 +414,7 @@ class App extends Component {
           </div>
         </Column>
       </div>
-    )
+    );
   }
 }
 
@@ -330,10 +422,10 @@ App.defaultProps = {
   width: window.innerWidth,
   height: window.innerHeight,
   fontSize: 16,
-}
+};
 
 export default connect(
-  state => ( {
+  state => ({
     result: state.app.result,
     adminQuizId: state.app.adminQuizId,
     adminStartTime: state.app.adminStartTime,
@@ -344,20 +436,30 @@ export default connect(
     width: state.app.width,
     height: state.app.height,
     members: state.app.members,
-    items: ['出席表示', '集計表示', '出席CSV', '日付リスト', '生徒リスト', '各種設定'],
+    items: [
+      "出席表示",
+      "集計表示",
+      "出席CSV",
+      "日付リスト",
+      "生徒リスト",
+      "マイク感度",
+      "スケジューラ",
+    ],
     adminFilename: state.app.adminFilename,
     adminPage: state.app.adminPage,
-  } ),
-  dispatch => ( {
-    playSpeech: (text, callback) => dispatch( playSpeech(text, callback) ),
-    stopSpeech: (text, callback) => dispatch( stopSpeech(text, callback) ),
-    playScenario: (text, range, callback) => dispatch( playScenario(text, range, callback) ),
-    stopScenario: (callback) => dispatch( stopScenario(callback) ),
-    save: (text, callback) => dispatch( save(text, callback) ),
-    load: (option, callback) => dispatch( load(option, callback) ),
-    list: (callback) => dispatch( list(callback) ),
-    onLayout: (size) => dispatch( changeLayout(size) ),
-    setParams: (payload, callback) => dispatch( setParams(payload, callback) ),
-    loadResult: (quizId, startTime, playerName, callback) => dispatch( loadResult(quizId, startTime, playerName, callback) ),
+  }),
+  dispatch => ({
+    playSpeech: (text, callback) => dispatch(playSpeech(text, callback)),
+    stopSpeech: (text, callback) => dispatch(stopSpeech(text, callback)),
+    playScenario: (text, range, callback) =>
+      dispatch(playScenario(text, range, callback)),
+    stopScenario: callback => dispatch(stopScenario(callback)),
+    save: (text, callback) => dispatch(save(text, callback)),
+    load: (option, callback) => dispatch(load(option, callback)),
+    list: callback => dispatch(list(callback)),
+    onLayout: size => dispatch(changeLayout(size)),
+    setParams: (payload, callback) => dispatch(setParams(payload, callback)),
+    loadResult: (quizId, startTime, playerName, callback) =>
+      dispatch(loadResult(quizId, startTime, playerName, callback)),
   })
 )(App);
